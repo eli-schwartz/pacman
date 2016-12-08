@@ -37,6 +37,7 @@ check_pgpsigs() {
 	local errors=0
 	local statusfile=$(mktemp)
 	local all_sources
+	local proto fragment fragtype fragval dir
 
 	case $1 in
 		all)
@@ -47,14 +48,39 @@ check_pgpsigs() {
 			;;
 	esac
 	for file in "${all_sources[@]}"; do
+		proto="$(get_protocol "$file")"
+		dir=$(get_filepath "$file")
+		fragment=${file#*#}
+		if [[ $fragment = "$file" ]]; then
+			unset fragment
+		fi
+
 		file="$(get_filename "$file")"
-		if [[ $file != *.@(sig?(n)|asc) ]]; then
+		# FIXME: When should git be checked?
+		if [[ $proto == 'git' ]]; then
+			found=1
+			case ${fragment%%=*} in
+				commit|branch|'')
+					fragtype=commit
+					fragval=HEAD
+					;;
+				tag)
+					fragtype=tag
+					fragval=${fragment##*=}
+					;;
+			esac
+		elif [[ $file != *.@(sig?(n)|asc) ]]; then
 			continue
 		fi
 
-		printf "    %s ... " "${file%.*}" >&2
+		if [[ $proto == 'git' ]]; then
+			printf "    %s git repo ... " "${file%.*}" >&2
+		else
+			printf "    %s ... " "${file%.*}" >&2
+		fi
 
-		if ! file="$(get_filepath "$file")"; then
+		# FIXME: Please G-d say there is a better way to check if a git object has a signature
+		if ! file="$(get_filepath "$file")" || [[ $proto == 'git' && $(git -C "$dir" cat-file $fragtype $fragval|grep -q 'BEGIN PGP SIGNATURE') -eq 0 ]]; then
 			printf '%s\n' "$(gettext "SIGNATURE NOT FOUND")" >&2
 			errors=1
 			continue
@@ -83,7 +109,18 @@ check_pgpsigs() {
 			"")  decompress="cat" ;;
 		esac
 
-		$decompress < "$sourcefile" | gpg --quiet --batch --status-file "$statusfile" --verify "$file" - 2> /dev/null
+		if [[ $proto == 'git' ]]; then
+			git -C "$dir" verify-$fragtype --raw "$fragval" > "$statusfile" 2>&1
+			# FIXME: A way to check for signatures existing.
+			# Is it better than the above eyesore?
+			if ! grep -qs NEWSIG "$statusfile"; then
+				printf '%s\n' "$(gettext "SIGNATURE NOT FOUND")" >&2
+				errors=1
+				continue
+			fi
+		else
+			$decompress < "$sourcefile" | gpg --quiet --batch --status-file "$statusfile" --verify "$file" - 2> /dev/null
+		fi
 		# these variables are assigned values in parse_gpg_statusfile
 		success=0
 		status=
@@ -204,11 +241,14 @@ parse_gpg_statusfile() {
 }
 
 source_has_signatures() {
-	local file all_sources
+	local file all_sources proto
 
 	get_all_sources_for_arch 'all_sources'
 	for file in "${all_sources[@]}"; do
-		if [[ ${file%%::*} = *.@(sig?(n)|asc) ]]; then
+		proto="$(get_protocol "$file")"
+
+		# FIXME: We need a way to actually specify whether git should be checked
+		if [[ ${file%%::*} = *.@(sig?(n)|asc) || $proto == 'git' ]]; then
 			return 0
 		fi
 	done
