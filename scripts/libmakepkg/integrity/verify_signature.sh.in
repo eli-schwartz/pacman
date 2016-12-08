@@ -59,14 +59,17 @@ check_pgpsigs() {
 		# FIXME: When should git be checked?
 		if [[ $proto == 'git' ]]; then
 			case ${fragment%%=*} in
-				commit|branch|'')
-					fragtype=commit
-					fragval=HEAD
-					;;
 				tag)
 					fragtype=tag
 					fragval=${fragment##*=}
 					;;
+				commit|branch)
+					fragtype=commit
+					fragval=${fragment##*=}
+					;;
+				'')
+					fragtype=commit
+					fragval=HEAD
 			esac
 		elif [[ $file != *.@(sig?(n)|asc) ]]; then
 			continue
