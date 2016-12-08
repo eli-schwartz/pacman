@@ -32,7 +32,7 @@ check_pgpsigs() {
 
 	msg "$(gettext "Verifying source file signatures with %s...")" "gpg"
 
-	local file ext decompress found pubkey success status fingerprint trusted
+	local netfile file ext decompress found pubkey success status fingerprint trusted
 	local warning=0
 	local errors=0
 	local statusfile=$(mktemp)
@@ -47,18 +47,17 @@ check_pgpsigs() {
 			get_all_sources_for_arch 'all_sources'
 			;;
 	esac
-	for file in "${all_sources[@]}"; do
-		proto="$(get_protocol "$file")"
-		dir=$(get_filepath "$file")
-		fragment=${file#*#}
-		if [[ $fragment = "$file" ]]; then
+	for netfile in "${all_sources[@]}"; do
+		proto="$(get_protocol "$netfile")"
+		dir=$(get_filepath "$netfile")
+		fragment=${netfile#*#}
+		if [[ $fragment = "$netfile" ]]; then
 			unset fragment
 		fi
 
-		file="$(get_filename "$file")"
+		file="$(get_filename "$netfile")"
 		# FIXME: When should git be checked?
 		if [[ $proto == 'git' ]]; then
-			found=1
 			case ${fragment%%=*} in
 				commit|branch|'')
 					fragtype=commit
@@ -80,7 +79,8 @@ check_pgpsigs() {
 		fi
 
 		# FIXME: Please G-d say there is a better way to check if a git object has a signature
-		if ! file="$(get_filepath "$file")" || [[ $proto == 'git' && $(git -C "$dir" cat-file $fragtype $fragval|grep -q 'BEGIN PGP SIGNATURE') -eq 0 ]]; then
+		if [[ $proto == 'git' && $(git -C "$dir" cat-file $fragtype $fragval|grep -q 'BEGIN PGP SIGNATURE') -eq 1 ]] \
+				|| ! get_filepath "$netfile" > /dev/null; then
 			printf '%s\n' "$(gettext "SIGNATURE NOT FOUND")" >&2
 			errors=1
 			continue
@@ -93,6 +93,9 @@ check_pgpsigs() {
 				break;
 			fi
 		done
+		if [[ $proto == 'git' ]]; then
+			found=1
+		fi
 		if (( ! found )); then
 			printf '%s\n' "$(gettext "SOURCE FILE NOT FOUND")" >&2
 			errors=1
