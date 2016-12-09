@@ -57,7 +57,7 @@ check_pgpsigs() {
 
 		file="$(get_filename "$netfile")"
 		# FIXME: When should git be checked?
-		if [[ $proto == 'git' ]]; then
+		if [[ $proto = git* ]]; then
 			case ${fragment%%=*} in
 				tag)
 					fragtype=tag
@@ -75,14 +75,14 @@ check_pgpsigs() {
 			continue
 		fi
 
-		if [[ $proto == 'git' ]]; then
+		if [[ $proto = git* ]]; then
 			printf "    %s git repo ... " "${file%.*}" >&2
 		else
 			printf "    %s ... " "${file%.*}" >&2
 		fi
 
 		# FIXME: Please G-d say there is a better way to check if a git object has a signature
-		if [[ $proto == 'git' && $(git -C "$dir" cat-file $fragtype $fragval|grep -q 'BEGIN PGP SIGNATURE') -eq 1 ]] \
+		if [[ $proto = git* && $(git -C "$dir" cat-file $fragtype $fragval|grep -q 'BEGIN PGP SIGNATURE') -eq 1 ]] \
 				|| ! get_filepath "$netfile" > /dev/null; then
 			printf '%s\n' "$(gettext "SIGNATURE NOT FOUND")" >&2
 			errors=1
@@ -96,7 +96,7 @@ check_pgpsigs() {
 				break;
 			fi
 		done
-		if [[ $proto == 'git' ]]; then
+		if [[ $proto = git* ]]; then
 			found=1
 		fi
 		if (( ! found )); then
@@ -115,7 +115,7 @@ check_pgpsigs() {
 			"")  decompress="cat" ;;
 		esac
 
-		if [[ $proto == 'git' ]]; then
+		if [[ $proto = git* ]]; then
 			git -C "$dir" verify-$fragtype --raw "$fragval" > "$statusfile" 2>&1
 			# FIXME: A way to check for signatures existing.
 			# Is it better than the above eyesore?
@@ -254,7 +254,7 @@ source_has_signatures() {
 		proto="$(get_protocol "$file")"
 
 		# FIXME: We need a way to actually specify whether git should be checked
-		if [[ ${file%%::*} = *.@(sig?(n)|asc) || $proto == 'git' ]]; then
+		if [[ ${file%%::*} = *.@(sig?(n)|asc) || $proto = git* ]]; then
 			return 0
 		fi
 	done
