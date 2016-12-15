@@ -37,7 +37,7 @@ check_pgpsigs() {
 	local errors=0
 	local statusfile=$(mktemp)
 	local all_sources
-	local proto fragment fragtype fragval dir
+	local proto dir fragment query fragtype fragval
 
 	case $1 in
 		all)
@@ -50,14 +50,11 @@ check_pgpsigs() {
 	for netfile in "${all_sources[@]}"; do
 		proto="$(get_protocol "$netfile")"
 		dir=$(get_filepath "$netfile")
-		fragment=${netfile#*#}
-		if [[ $fragment = "$netfile" ]]; then
-			unset fragment
-		fi
-
+		fragment=$(get_uri_fragment "$netfile")
+		query=$(get_uri_query "$netfile")
 		file="$(get_filename "$netfile")"
-		# FIXME: When should git be checked?
-		if [[ $proto = git* ]]; then
+
+		if [[ $proto = git* && $query = signed ]]; then
 			case ${fragment%%=*} in
 				tag)
 					fragtype=tag
@@ -252,9 +249,9 @@ source_has_signatures() {
 	get_all_sources_for_arch 'all_sources'
 	for file in "${all_sources[@]}"; do
 		proto="$(get_protocol "$file")"
+		query=$(get_uri_query "$netfile")
 
-		# FIXME: We need a way to actually specify whether git should be checked
-		if [[ ${file%%::*} = *.@(sig?(n)|asc) || $proto = git* ]]; then
+		if [[ ${file%%::*} = *.@(sig?(n)|asc) || ( $proto = git* && $query = signed ) ]]; then
 			return 0
 		fi
 	done
