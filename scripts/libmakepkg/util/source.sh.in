@@ -133,6 +133,7 @@ get_uri_query() {
 	if [[ $query = "$netfile" ]]; then
 		unset query
 	fi
+	query=${query%#*}
 
 	printf "%s\n" "$query"
 }
