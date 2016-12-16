@@ -39,6 +39,7 @@ download_git() {
 	local url=$(get_url "$netfile")
 	url=${url#git+}
 	url=${url%%#*}
+	url=${url%%\?*}
 
 	if [[ ! -d "$dir" ]] || dir_is_empty "$dir" ; then
 		msg2 "$(gettext "Cloning %s %s repo...")" "${repo}" "git"
