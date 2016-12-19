@@ -65,7 +65,7 @@ get_filename() {
 	case $proto in
 		bzr*|git*|hg*|svn*)
 			filename=${netfile%%#*}
-			filename=${netfile%%\?*}
+			filename=${filename%%\?*}
 			filename=${filename%/}
 			filename=${filename##*/}
 			if [[ $proto = bzr* ]]; then
