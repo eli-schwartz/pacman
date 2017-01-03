@@ -32,12 +32,11 @@ check_pgpsigs() {
 
 	msg "$(gettext "Verifying source file signatures with %s...")" "gpg"
 
-	local netfile file ext decompress found pubkey success status fingerprint trusted
+	local netfile proto pubkey success status fingerprint trusted
 	local warning=0
 	local errors=0
 	local statusfile=$(mktemp)
 	local all_sources
-	local proto dir fragment query fragtype fragval
 
 	case $1 in
 		all)
@@ -48,75 +47,14 @@ check_pgpsigs() {
 			;;
 	esac
 	for netfile in "${all_sources[@]}"; do
-		file="$(get_filename "$netfile")"
 		proto="$(get_protocol "$netfile")"
-		dir=$(get_filepath "$netfile")
-		fragment=$(get_uri_fragment "$netfile")
-		query=$(get_uri_query "$netfile")
-
-		if [[ $proto = git* && $query = signed ]]; then
-			case ${fragment%%=*} in
-				tag)
-					fragtype=tag
-					fragval=${fragment##*=}
-					;;
-				commit|branch)
-					fragtype=commit
-					fragval=${fragment##*=}
-					;;
-				'')
-					fragtype=commit
-					fragval=HEAD
-			esac
-		elif [[ $file != *.@(sig?(n)|asc) ]]; then
-			continue
-		fi
 
 		if [[ $proto = git* ]]; then
-			printf "    %s git repo ... " "${file%.*}" >&2
+			verify_git_signature "$netfile" "$statusfile" || continue
 		else
-			printf "    %s ... " "${file%.*}" >&2
+			verify_file_signature "$netfile" "$statusfile" || continue
 		fi
 
-		if ! file="$(get_filepath "$netfile")"; then
-			printf '%s\n' "$(gettext "SIGNATURE NOT FOUND")" >&2
-			errors=1
-			continue
-		fi
-
-		found=0
-		for ext in "" gz bz2 xz lrz lzo Z; do
-			if sourcefile="$(get_filepath "${file%.*}${ext:+.$ext}")"; then
-				found=1
-				break;
-			fi
-		done
-		if [[ $proto != git* ]] && (( ! found )); then
-			printf '%s\n' "$(gettext "SOURCE FILE NOT FOUND")" >&2
-			errors=1
-			continue
-		fi
-
-		case "$ext" in
-			gz)  decompress="gzip -c -d -f" ;;
-			bz2) decompress="bzip2 -c -d -f" ;;
-			xz)  decompress="xz -c -d" ;;
-			lrz) decompress="lrzip -q -d" ;;
-			lzo) decompress="lzop -c -d -q" ;;
-			Z)   decompress="uncompress -c -f" ;;
-			"")  decompress="cat" ;;
-		esac
-
-		if [[ $proto = git* ]]; then
-			git -C "$dir" verify-$fragtype --raw "$fragval" > "$statusfile" 2>&1
-			if ! grep -qs NEWSIG "$statusfile"; then
-				printf '%s\n' "$(gettext "SIGNATURE NOT FOUND")" >&2
-				errors=1
-				continue
-			fi
-		else
-			$decompress < "$sourcefile" | gpg --quiet --batch --status-file "$statusfile" --verify "$file" - 2> /dev/null
-		fi
 		# these variables are assigned values in parse_gpg_statusfile
 		success=0
 		status=
@@ -175,6 +113,84 @@ check_pgpsigs() {
 	if (( warnings )); then
 		warning "$(gettext "Warnings have occurred while verifying the signatures.")"
 		plain "$(gettext "Please make sure you really trust them.")"
+	fi
+}
+
+verify_file_signature() {
+	local netfile="$1" statusfile="$2"
+	local file ext decompress found sourcefile
+
+	file="$(get_filename "$netfile")"
+	if [[ $file != *.@(sig?(n)|asc) ]]; then
+		return 1
+	fi
+
+	printf "    %s ... " "${file%.*}" >&2
+
+	if ! file="$(get_filepath "$netfile")"; then
+		printf '%s\n' "$(gettext "SIGNATURE NOT FOUND")" >&2
+		errors=1
+		return
+	fi
+
+	found=0
+	for ext in "" gz bz2 xz lrz lzo Z; do
+		if sourcefile="$(get_filepath "${file%.*}${ext:+.$ext}")"; then
+			found=1
+			break;
+		fi
+	done
+	if (( ! found )); then
+		printf '%s\n' "$(gettext "SOURCE FILE NOT FOUND")" >&2
+		errors=1
+		return
+	fi
+
+	case "$ext" in
+		gz)  decompress="gzip -c -d -f" ;;
+		bz2) decompress="bzip2 -c -d -f" ;;
+		xz)  decompress="xz -c -d" ;;
+		lrz) decompress="lrzip -q -d" ;;
+		lzo) decompress="lzop -c -d -q" ;;
+		Z)   decompress="uncompress -c -f" ;;
+		"")  decompress="cat" ;;
+	esac
+
+	$decompress < "$sourcefile" | gpg --quiet --batch --status-file "$statusfile" --verify "$file" - 2> /dev/null
+}
+
+verify_git_signature() {
+	local netfile=$1 statusfile=$2
+	local dir fragment query fragtype fragval
+
+	dir=$(get_filepath "$netfile")
+	fragment=$(get_uri_fragment "$netfile")
+	query=$(get_uri_query "$netfile")
+
+	if [[ $query != signed ]]; then
+		return 1
+	fi
+
+	case ${fragment%%=*} in
+		tag)
+			fragtype=tag
+			fragval=${fragment##*=}
+			;;
+		commit|branch)
+			fragtype=commit
+			fragval=${fragment##*=}
+			;;
+		'')
+			fragtype=commit
+			fragval=HEAD
+	esac
+
+	printf "    %s git repo ... " "${dir##*/}" >&2
+
+	git -C "$dir" verify-$fragtype --raw "$fragval" > "$statusfile" 2>&1
+	if ! grep -qs NEWSIG "$statusfile"; then
+		printf '%s\n' "$(gettext "SIGNATURE NOT FOUND")" >&2
+		errors=1
 	fi
 }
 
