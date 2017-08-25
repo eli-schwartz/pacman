@@ -191,7 +191,7 @@ check_keyids_exist() {
 }
 
 initialize() {
-	local conffile keyserv
+	local conffile
 	# Check for simple existence rather than for a directory as someone
 	# may want to use a symlink here
 	[[ -e ${PACMAN_KEYRING_DIR} ]] || mkdir -p -m 755 "${PACMAN_KEYRING_DIR}"

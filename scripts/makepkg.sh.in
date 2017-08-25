@@ -404,7 +404,6 @@ run_function() {
 	fi
 	cd_safe "$srcdir"
 
-	local ret=0
 	if (( LOGGING )); then
 		local fullver=$(get_full_version)
 		local BUILDLOG="$LOGDEST/${pkgbase}-${fullver}-${CARCH}-$pkgfunc.log"
