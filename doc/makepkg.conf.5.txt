@@ -246,6 +246,7 @@ Options
 **COMPRESSGZ=**"(gzip -c -f -n)"::
 **COMPRESSBZ2=**"(bzip2 -c -f)"::
 **COMPRESSXZ=**"(xz -c -z -)"::
+**COMPRESSZST=**"(zstd -c -z -)"::
 **COMPRESSLZO**"(lzop -q)"::
 **COMPRESSLRZ=**"(lrzip -q)"::
 **COMPRESSZ=**"(compress -c -f)"::
@@ -254,7 +255,7 @@ Options
 
 **PKGEXT=**".pkg.tar.gz", **SRCEXT=**".src.tar.gz"::
 	Sets the compression used when making compiled or source packages.
-	Valid suffixes are `.tar`, `.tar.gz`, `.tar.bz2`, `.tar.xz`,
+	Valid suffixes are `.tar`, `.tar.gz`, `.tar.bz2`, `.tar.xz`, `.tar.zst`,
 	`.tar.lzo`, `.tar.lrz`, and `.tar.Z`.
 	Do not touch these unless you know what you are doing.
 
