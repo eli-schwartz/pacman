@@ -29,7 +29,7 @@ have_function() {
 }
 
 grep_function() {
-	{ declare -f "$1" || declare -f package; } 2>/dev/null | grep -E "$2"
+	{ declare -f "$1" || declare -f package; } 2>/dev/null | grep -Po "$2"
 }
 
 array_build() {
@@ -77,9 +77,9 @@ extract_function_variable() {
 	local funcname=$1 attr=$2 isarray=$3 outputvar=$4 attr_regex= decl= r=1
 
 	if (( isarray )); then
-		printf -v attr_regex '^[[:space:]]* %s\+?=\(' "$2"
+		printf -v attr_regex '(?<=^|&&|\|\|)[[:space:]]* %s\+?=\(.+' "$2"
 	else
-		printf -v attr_regex '^[[:space:]]* %s\+?=[^(]' "$2"
+		printf -v attr_regex '(?<=^|&&|\|\|)[[:space:]]* %s\+?=[^(].+' "$2"
 	fi
 
 	# this function requires extglob - save current status to restore later
