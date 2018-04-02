@@ -34,9 +34,10 @@ your logs and output are not localized.
 Options
 -------
 *-A, \--ignorearch*::
-	Ignore a missing or incomplete arch field in the build script. This is
-	for rebuilding packages from source when the PKGBUILD may be slightly
-	outdated and not updated with an `arch=('yourarch')` field.
+	Ignore a missing or incomplete arch field in the build script, when
+	building packages. This is for rebuilding packages from source when
+	the PKGBUILD may be slightly outdated and not updated with an `arch=('yourarch')`
+	field. Act on all available arches, when performing other actions.
 
 *-c, \--clean*::
 	Clean up leftover work files and directories after a successful build.
@@ -63,7 +64,8 @@ Options
 	if required and perform the integrity checks. No extraction or build is
 	performed. Dependencies specified in the PKGBUILD will not be handled
 	unless `--syncdeps` is used. Useful for performing subsequent offline
-	builds.
+	builds. When `--ignorearch` is used, verify all split arch sources instead
+	of just the sources for the current arch.
 
 *-f, \--force*::
 	makepkg will not build a package if a built package already exists in
@@ -198,7 +200,8 @@ Options
 
 *\--packagelist*::
 	List the package filenames that would be produced without building. Listed
-	package filenames include PKGDEST and PKGEXT.
+	package filenames include PKGDEST and PKGEXT. When `--ignorearch` is used,
+	list filenames for all supported arches.
 
 *\--printsrcinfo*::
 	Generate and print the SRCINFO file to stdout.
