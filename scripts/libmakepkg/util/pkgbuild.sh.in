@@ -193,16 +193,31 @@ get_pkg_arch() {
 	fi
 }
 
+# usage: print_all_package_names( [allarch] )
+# print the newline-terminated full filepath of built packages (including
+# debug ). If allarch is specified, print the filepath for all architectures.
 print_all_package_names() {
 	local version=$(get_full_version)
 	local architecture pkg opts a
 	for pkg in ${pkgname[@]}; do
-		architecture=$(get_pkg_arch $pkg)
-		printf "%s/%s-%s-%s%s\n" "$PKGDEST" "$pkg" "$version" "$architecture" "$PKGEXT"
+		if [[ $1 = allarch ]]; then
+			get_pkgbuild_attribute "$pkg" 'arch' 1 architecture
+		else
+			architecture=$(get_pkg_arch $pkg)
+		fi
+		for a in "${architecture[@]}"; do
+			printf "%s/%s-%s-%s%s\n" "$PKGDEST" "$pkg" "$version" "$a" "$PKGEXT"
+		done
 	done
 	if check_option "debug" "y" && check_option "strip" "y"; then
-		architecture=$(get_pkg_arch)
-		printf "%s/%s-%s-%s-%s%s\n" "$PKGDEST" "$pkgbase" "@DEBUGSUFFIX@" "$version" "$architecture" "$PKGEXT"
+		if [[ $1 = allarch ]]; then
+			get_pkgbuild_attribute '' 'arch' 1 architecture
+		else
+			architecture=$(get_pkg_arch)
+		fi
+		for a in "${architecture[@]}"; do
+			printf "%s/%s-%s-%s-%s%s\n" "$PKGDEST" "$pkgbase" "@DEBUGSUFFIX@" "$version" "$a" "$PKGEXT"
+		done
 	fi
 }
 

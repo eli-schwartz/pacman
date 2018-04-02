@@ -1053,7 +1053,7 @@ while true; do
 		--nosign)         SIGNPKG='n' ;;
 		-o|--nobuild)     BUILDPKG=0 NOBUILD=1 ;;
 		-p)               shift; BUILDFILE=$1 ;;
-		--packagelist)    BUILDPKG=0 PACKAGELIST=1 IGNOREARCH=1;;
+		--packagelist)    BUILDPKG=0 PACKAGELIST=1 ;;
 		--printsrcinfo)   BUILDPKG=0 PRINTSRCINFO=1 IGNOREARCH=1;;
 		-r|--rmdeps)      RMDEPS=1 ;;
 		-R|--repackage)   REPKG=1 ;;
@@ -1274,7 +1274,11 @@ if { [[ -z $SIGNPKG ]] && check_buildenv "sign" "y"; } || [[ $SIGNPKG == 'y' ]];
 fi
 
 if (( PACKAGELIST )); then
-	print_all_package_names
+	if (( IGNOREARCH )); then
+		print_all_package_names allarch
+	else
+		print_all_package_names
+	fi
 	exit $E_OK
 fi
 
@@ -1387,8 +1391,13 @@ if (( !REPKG )); then
 	if (( NOEXTRACT && ! VERIFYSOURCE )); then
 		warning "$(gettext "Using existing %s tree")" "\$srcdir/"
 	else
-		download_sources
-		check_source_integrity
+		if (( VERIFYSOURCE && IGNOREARCH )); then
+			download_sources allarch
+			check_source_integrity all
+		else
+			download_sources
+			check_source_integrity
+		fi
 		(( VERIFYSOURCE )) && exit $E_OK
 
 		if (( CLEANBUILD )); then
