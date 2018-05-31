@@ -905,19 +905,10 @@ check_build_status() {
 backup_package_variables() {
 	local var
 	for var in ${pkgbuild_schema_package_overrides[@]}; do
-		local indirect="${var}_backup"
-		eval "${indirect}=(\"\${$var[@]}\")"
-	done
-}
-
-restore_package_variables() {
-	local var
-	for var in ${pkgbuild_schema_package_overrides[@]}; do
-		local indirect="${var}_backup"
-		if [[ -n ${!indirect} ]]; then
-			eval "${var}=(\"\${$indirect[@]}\")"
+		if [[ ${!var} ]]; then
+			declare -p $var | awk '!x{x=sub("^declare --?","declare -g")}7'
 		else
-			unset ${var}
+			printf '%s\n'  "unset $var"
 		fi
 	done
 }
@@ -935,10 +926,10 @@ run_single_packaging() {
 
 run_split_packaging() {
 	local pkgname_backup=("${pkgname[@]}")
-	backup_package_variables
+	local restore_package_variables="$(backup_package_variables)"
 	for pkgname in ${pkgname_backup[@]}; do
 		run_single_packaging $pkgname
-		restore_package_variables
+		eval "$restore_package_variables"
 	done
 	pkgname=("${pkgname_backup[@]}")
 }
@@ -1320,7 +1311,7 @@ if (( INFAKEROOT )); then
 	else
 		run_split_packaging
 	fi
-	
+
 	create_debug_package
 
 	msg "$(gettext "Leaving %s environment.")" "fakeroot"
