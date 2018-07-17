@@ -625,7 +625,7 @@ write_pkginfo() {
 }
 
 write_buildinfo() {
-	write_kv_pair "format" "1"
+	write_kv_pair "format" "2"
 
 	write_kv_pair "pkgname" "$pkgname"
 	write_kv_pair "pkgbase" "$pkgbase"
@@ -644,6 +644,13 @@ write_buildinfo() {
 	write_kv_pair "builddir"  "${BUILDDIR}"
 	write_kv_pair "buildenv" "${BUILDENV[@]}"
 	write_kv_pair "options" "${OPTIONS[@]}"
+	write_kv_pair "cppflags" "$CPPFLAGS"
+	write_kv_pair "cflags" "$CFLAGS"
+	write_kv_pair "cxxflags" "$CXXFLAGS"
+	write_kv_pair "ldflags" "$LDFLAGS"
+	write_kv_pair "strip_binaries" "$STRIP_BINARIES"
+	write_kv_pair "strip_shared" "$STRIP_SHARED"
+	write_kv_pair "strip_static" "$STRIP_STATIC"
 
 	local pkginfos_parsed=($(LC_ALL=C run_pacman -Qi | awk -F': ' '\
 		/^Name .*/ {printf "%s", $2} \
