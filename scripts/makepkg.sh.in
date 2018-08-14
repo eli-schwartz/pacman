@@ -182,7 +182,7 @@ enter_fakeroot() {
 update_pkgver() {
 	msg "$(gettext "Starting %s()...")" "pkgver"
 	newpkgver=$(run_function_safe pkgver)
-	if (( $? != 0 )); then
+	if (( $? )); then
 		error_function pkgver
 	fi
 	if ! check_pkgver "$newpkgver"; then
