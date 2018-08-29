@@ -905,7 +905,11 @@ backup_package_variables() {
 	local var
 	for var in ${pkgbuild_schema_package_overrides[@]}; do
 		if [[ ${!var} ]]; then
-			declare -p $var | awk '!x{x=sub("^declare --?","declare -g")}7'
+			if is_array $var; then
+				printf '%s=(%s)\n' "$var" "${var[*]@Q}"
+			else
+				printf '%s=%s\n' "$var" "${var@Q}"
+			fi
 		else
 			printf '%s\n'  "unset $var"
 		fi
