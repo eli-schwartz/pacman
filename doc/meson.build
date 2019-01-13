@@ -105,7 +105,7 @@ run_target('html',
            command : ['/bin/true'],
            depends : html_targets)
 
-custom_target(
+website_tar_gz = custom_target(
   'website.tar.gz',
   command : [
     'bsdtar', 'czf', '@OUTPUT@',
@@ -124,6 +124,10 @@ custom_target(
   build_by_default : false,
   depends : html_targets,
 )
+
+run_target('website',
+           command : ['/bin/true'],
+           depends : website_tar_gz)
 
 meson.add_install_script(MESON_MAKE_SYMLINK,
                          'repo-add.8',
