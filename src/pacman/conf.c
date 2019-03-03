@@ -211,6 +211,7 @@ static int download_with_xfercommand(const char *url, const char *localpath,
 	struct stat st;
 	char *parsedcmd, *tempcmd;
 	char *destfile, *tempfile, *filename;
+	char *parsedurl, *parsedfilename;
 
 	if(!config->xfercommand) {
 		return -1;
@@ -230,15 +231,32 @@ static int download_with_xfercommand(const char *url, const char *localpath,
 		unlink(destfile);
 	}
 
+	parsedfilename = tempfile;
+	if(strstr(tempfile, "'")) {
+		parsedfilename = strreplace(tempfile, "'", "'\\''");
+	}
+
+	if(strstr(url, "'")) {
+		parsedurl = strreplace(url, "'", "'\\''");
+		url = parsedurl;
+	}
+
 	tempcmd = strdup(config->xfercommand);
 	/* replace all occurrences of %o with fn.part */
 	if(strstr(tempcmd, "%o")) {
 		usepart = 1;
-		parsedcmd = strreplace(tempcmd, "%o", tempfile);
+		parsedcmd = strreplace(tempcmd, "%o", "'%o'");
+		free(tempcmd);
+		tempcmd = parsedcmd;
+		parsedcmd = strreplace(tempcmd, "%o", parsedfilename);
 		free(tempcmd);
 		tempcmd = parsedcmd;
 	}
+
 	/* replace all occurrences of %u with the download URL */
+	parsedcmd = strreplace(tempcmd, "%u", "'%u'");
+	free(tempcmd);
+	tempcmd = parsedcmd;
 	parsedcmd = strreplace(tempcmd, "%u", url);
 	free(tempcmd);
 
