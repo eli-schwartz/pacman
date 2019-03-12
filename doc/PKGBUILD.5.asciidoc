@@ -332,8 +332,8 @@ PKGBUILD must contain a `package()` function which installs all the package's
 files into the packaging directory, with optional `prepare()`, `build()`, and
 `check()` functions being used to create those files from source.
 
-This is directly sourced and executed by makepkg, so anything that Bash or the
-system has available is available for use here. Be sure any exotic commands
+These are directly sourced and executed by makepkg, so anything that Bash or
+the system has available is available for use here. Be sure any exotic commands
 used are covered by the `makedepends` array.
 
 If you create any variables of your own in any of these functions, it is
