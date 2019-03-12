@@ -352,7 +352,11 @@ function.
 	prepare the sources for building, such as patching, are performed. This
 	function is run after the source extraction and before the `build()`
 	function. The `prepare()` function is skipped when source extraction
-	is skipped.
+	is skipped. For example, generating configuration files using autoreconf
+	results in universally applicable changes and should occur in `prepare()`,
+	but running the configure script results in changes specific to the current
+	build, and must occur exclusively in `build()`. Features like `buildflags`
+	or `makeflags` are expressly not available during `prepare()`.
 
 *build() Function*::
 	The optional `build()` function is use to compile and/or adjust the source
