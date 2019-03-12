@@ -53,11 +53,13 @@ Options
 	installed.
 
 *-e, \--noextract*::
-	Do not extract source files or run the prepare() function (if present);
-	use whatever source already exists in the $srcdir/ directory. This is
-	handy if you want to go into $srcdir/ and manually patch or tweak code,
-	then make a package out of the result. Keep in mind that creating a
-	patch may be a better solution to allow others to use your PKGBUILD.
+	Do not extract source files or run the prepare() function (if present); use
+	whatever source already exists in the $srcdir/ directory. This allows you
+	to separate the source extraction in combination with `\--nobuild`, or
+	continue an aborted build. It is also handy if you want to go into $srcdir/
+	and manually patch or tweak code, then make a package out of the result.
+	Keep in mind that creating a patch may be a better solution to allow others
+	to use your PKGBUILD.
 
 *\--verifysource*::
 	For each source file in the source array of PKGBUILD, download the file
@@ -113,8 +115,7 @@ Options
 
 *-o, \--nobuild*::
 	Download and extract files, run the prepare() function, but do not build
-	them. Useful with the '\--noextract' option if you wish to tweak the files
-	in $srcdir/ before building.
+	them. Useful in combination with the '\--noextract' option.
 
 *-p* <buildscript>::
 	Read the package script `buildscript` instead of the `PKGBUILD` default;

@@ -360,7 +360,11 @@ function.
 
 *build() Function*::
 	The optional `build()` function is use to compile and/or adjust the source
-	files in preparation to be installed by the `package()` function.
+	files in preparation to be installed by the `package()` function. All
+	commands specific to the package creation (but not source code
+	preparation), before the final installation of files into the packaging
+	root, should be performed here. This function should be idempotent, in case
+	`makepkg --noextract` is used multiple times.
 
 *check() Function*::
 	An optional `check()` function can be specified in which a package's
