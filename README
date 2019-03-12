@@ -630,3 +630,10 @@ API CHANGES BETWEEN 5.0 AND 5.1
   - alpm_capabilities()
 - duplicate and add to list
   - alpm_list_append_strdup()
+
+API CHANGES BETWEEN 5.1 AND 5.2
+===============================
+[REMOVED]
+- alpm_sync_newversion()
+[ADDED]
+- alpm_sync_get_new_version()
