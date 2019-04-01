@@ -49,7 +49,7 @@ POPULATE=0
 RECEIVE=0
 REFRESH=0
 UPDATEDB=0
-USE_COLOR='y'
+USE_COLOR='m'
 VERIFY=0
 
 usage() {
@@ -68,6 +68,8 @@ usage() {
 	printf -- "$(gettext "  -r, --recv-keys           Fetch the specified keyids")\n"
 	printf -- "$(gettext "  -u, --updatedb            Update the trustdb of pacman")\n"
 	printf -- "$(gettext "  -v, --verify              Verify the file(s) specified by the signature(s)")\n"
+	printf -- "$(gettext "  --color                   Always enable colorized output messages")\n"
+	printf -- "$(gettext "  --nocolor                 Always disable colorized output messages")\n"
 	printf -- "$(gettext "  --edit-key                Present a menu for key management task on keyids")\n"
 	printf -- "$(gettext "  --import                  Imports pubring.gpg from dir(s)")\n"
 	printf -- "$(gettext "  --import-trustdb          Imports ownertrust values from trustdb.gpg in dir(s)")\n"
@@ -530,7 +532,7 @@ fi
 OPT_SHORT="adefhlruvV"
 OPT_LONG=('add' 'config:' 'delete' 'edit-key' 'export' 'finger' 'gpgdir:'
           'help' 'import' 'import-trustdb' 'init' 'keyserver:' 'list-keys' 'list-sigs'
-          'lsign-key' 'nocolor' 'populate' 'recv-keys' 'refresh-keys' 'updatedb'
+          'lsign-key' 'color' 'nocolor' 'populate' 'recv-keys' 'refresh-keys' 'updatedb'
           'verify' 'version')
 if ! parseopts "$OPT_SHORT" "${OPT_LONG[@]}" -- "$@"; then
 	exit 1 # E_INVALID_OPTION
@@ -559,6 +561,7 @@ while (( $# )); do
 		-l|--list-keys)   LISTKEYS=1 ;;
 		--list-sigs)      LISTSIGS=1 ;;
 		--lsign-key)      LSIGNKEY=1 UPDATEDB=1 ;;
+		--color)          USE_COLOR='y';;
 		--nocolor)        USE_COLOR='n';;
 		--populate)       POPULATE=1 UPDATEDB=1 ;;
 		-r|--recv-keys)   RECEIVE=1 UPDATEDB=1 ;;
@@ -575,7 +578,7 @@ while (( $# )); do
 done
 
 # check if messages are to be printed using color
-if [[ -t 2 && $USE_COLOR != "n" ]]; then
+if [[ $USE_COLOR = "y" || ( -t 1 && -t 2 && $USE_COLOR = "m" ) ]]; then
 	colorize
 else
 	unset ALL_OFF BOLD BLUE GREEN RED YELLOW

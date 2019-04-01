@@ -47,7 +47,8 @@ usage() {
 	printf -- "$(gettext "  -r, --root <path>    set an alternate installation root")\n"
 	printf -- "$(gettext "  -V, --version        show version information and exit")\n"
 	printf -- "$(gettext "  --config <path>      set an alternate configuration file")\n"
-	printf -- "$(gettext "  --nocolor            disable colorized output messages")\n"
+	printf -- "$(gettext "  --color              always enable colorized output messages")\n"
+	printf -- "$(gettext "  --nocolor            always disable colorized output messages")\n"
 	echo
 }
 
@@ -85,10 +86,10 @@ if ! type gettext &>/dev/null; then
 	}
 fi
 
-USE_COLOR='y'
+USE_COLOR='m'
 
 OPT_SHORT="d:hr:V"
-OPT_LONG=('config:' 'dbpath:' 'help' 'nocolor' 'root:' 'version')
+OPT_LONG=('config:' 'dbpath:' 'help' 'color' 'nocolor' 'root:' 'version')
 if ! parseopts "$OPT_SHORT" "${OPT_LONG[@]}" -- "$@"; then
 	exit 1 # E_INVALID_OPTION
 fi
@@ -101,6 +102,7 @@ while true; do
 		-d|--dbpath)  shift; dbroot="$1" ;;
 		-r|--root)    shift; pacroot="$1" ;;
 		-h|--help)    usage; exit 0 ;;
+		--color)      USE_COLOR='y' ;;
 		--nocolor)    USE_COLOR='n' ;;
 		-V|--version) version; exit 0 ;;
 		--)           shift; break ;;
@@ -113,7 +115,7 @@ conffile=${conffile:-@sysconfdir@/pacman.conf}
 [[ -z $dbroot ]] && dbroot=$(pacman-conf --config="$conffile" --rootdir="$pacroot" dbpath)
 
 # check if messages are to be printed using color
-if [[ -t 2 && $USE_COLOR != "n" ]]; then
+if [[ $USE_COLOR = "y" || ( -t 1 && -t 2 && $USE_COLOR = "m" ) ]]; then
 	colorize
 else
 	unset ALL_OFF BOLD BLUE GREEN RED YELLOW

@@ -41,7 +41,7 @@ REPO_DB_PREFIX=
 REPO_DB_SUFFIX=
 LOCKFILE=
 CLEAN_LOCK=0
-USE_COLOR='y'
+USE_COLOR='m'
 PREVENT_DOWNGRADE=0
 
 # Import libmakepkg
@@ -79,7 +79,8 @@ packages to remove can be specified on the command line.\n")"
 		printf -- "$(gettext "Please move along, there is nothing to see here.\n")"
 		return
 	fi
-	printf -- "$(gettext "  --nocolor         turn off color in output\n")"
+	printf -- "$(gettext "  --color           always enable colorized output messages\n")"
+	printf -- "$(gettext "  --nocolor         always disable colorized output messages\n")"
 	printf -- "$(gettext "  -q, --quiet       minimize output\n")"
 	printf -- "$(gettext "  -s, --sign        sign database with GnuPG after update\n")"
 	printf -- "$(gettext "  -k, --key <key>   use the specified key to sign the database\n")"
@@ -607,6 +608,7 @@ while (( $# )); do
 		-q|--quiet) QUIET=1;;
 		-n|--new) ONLYADDNEW=1;;
 		-R|--remove) RMEXISTING=1;;
+		--color) USE_COLOR='y';;
 		--nocolor) USE_COLOR='n';;
 		-s|--sign)
 			SIGN=1
@@ -630,7 +632,7 @@ while (( $# )); do
 done
 
 # check if messages are to be printed using color
-if [[ -t 2 && $USE_COLOR != "n" ]]; then
+if [[ $USE_COLOR = "y" || ( -t 1 && -t 2 && $USE_COLOR = "m" ) ]]; then
 	colorize
 else
 	unset ALL_OFF BOLD BLUE GREEN RED YELLOW

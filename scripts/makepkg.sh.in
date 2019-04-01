@@ -79,6 +79,7 @@ SKIPPGPCHECK=0
 SIGNPKG=''
 SPLITPKG=0
 SOURCEONLY=0
+USE_COLOR='m'
 VERIFYSOURCE=0
 
 if [[ -n $SOURCE_DATE_EPOCH ]]; then
@@ -951,7 +952,8 @@ usage() {
 	printf -- "$(gettext "  -h, --help       Show this help message and exit")\n"
 	printf -- "$(gettext "  -i, --install    Install package after successful build")\n"
 	printf -- "$(gettext "  -L, --log        Log package build process")\n"
-	printf -- "$(gettext "  -m, --nocolor    Disable colorized output messages")\n"
+	printf -- "$(gettext "  --color          Always enable colorized output messages")\n"
+	printf -- "$(gettext "  -m, --nocolor    Always disable colorized output messages")\n"
 	printf -- "$(gettext "  -o, --nobuild    Download and extract files only")\n"
 	printf -- "$(gettext "  -p <file>        Use an alternate build script (instead of '%s')")\n" "$BUILDSCRIPT"
 	printf -- "$(gettext "  -r, --rmdeps     Remove installed dependencies after a successful build")\n"
@@ -1015,9 +1017,9 @@ ARGLIST=("$@")
 OPT_SHORT="AcCdefFghiLmop:rRsSV"
 OPT_LONG=('allsource' 'check' 'clean' 'cleanbuild' 'config:' 'force' 'geninteg'
           'help' 'holdver' 'ignorearch' 'install' 'key:' 'log' 'noarchive' 'nobuild'
-          'nocolor' 'nocheck' 'nodeps' 'noextract' 'noprepare' 'nosign' 'packagelist'
-          'printsrcinfo' 'repackage' 'rmdeps' 'sign' 'skipchecksums' 'skipinteg'
-          'skippgpcheck' 'source' 'syncdeps' 'verifysource' 'version')
+          'color' 'nocolor' 'nocheck' 'nodeps' 'noextract' 'noprepare' 'nosign'
+          'packagelist' 'printsrcinfo' 'repackage' 'rmdeps' 'sign' 'skipchecksums'
+          'skipinteg' 'skippgpcheck' 'source' 'syncdeps' 'verifysource' 'version')
 
 # Pacman Options
 OPT_LONG+=('asdeps' 'noconfirm' 'needed' 'noprogressbar')
@@ -1053,6 +1055,7 @@ while true; do
 		-i|--install)     INSTALL=1 ;;
 		--key)            shift; GPGKEY=$1 ;;
 		-L|--log)         LOGGING=1 ;;
+		--color)          USE_COLOR='y'; PACMAN_OPTS+=("--color" "always") ;;
 		-m|--nocolor)     USE_COLOR='n'; PACMAN_OPTS+=("--color" "never") ;;
 		--noarchive)      NOARCHIVE=1 ;;
 		--nocheck)        RUN_CHECK='n' ;;
@@ -1118,7 +1121,10 @@ PACMAN=${PACMAN:-pacman}
 PACMAN_PATH=$(type -P $PACMAN)
 
 # check if messages are to be printed using color
-if [[ -t 2 && $USE_COLOR != "n" ]] && check_buildenv "color" "y"; then
+if [[ $USE_COLOR = "m" ]] && check_buildenv "color" "n"; then
+	USE_COLOR='n'
+fi
+if [[ $USE_COLOR = "y" || ( -t 1 && -t 2 && $USE_COLOR = "m" ) ]]; then
 	colorize
 else
 	unset ALL_OFF BOLD BLUE GREEN RED YELLOW
