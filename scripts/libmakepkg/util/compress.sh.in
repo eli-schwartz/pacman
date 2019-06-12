@@ -24,6 +24,7 @@ LIBMAKEPKG_UTIL_COMPRESS_SH=1
 LIBRARY=${LIBRARY:-'@libmakepkgdir@'}
 
 source "$LIBRARY/util/message.sh"
+source "$LIBRARY/util/pkgbuild.sh"
 
 
 # Wrapper around many stream compression formats, for use in the middle of a
@@ -31,20 +32,53 @@ source "$LIBRARY/util/message.sh"
 compress_as() {
 	# $1: final archive filename extension for compression type detection
 
-	local ext=".tar${1##*.tar}"
+	local trim=${1%.tar*}
+	local ext=${1##$trim}
+	local cmd
+
+	get_compression_command "$ext" cmd
+
+	if (( ! ${#cmd[@]} )); then
+		warning "$(gettext "'%s' is not a valid archive extension.")" "$ext"
+		cat
+	else
+		"${cmd[@]}"
+	fi
+}
+
+# Check if compression format is valid for compress_as usage.
+can_compress_as() {
+	# $1: final archive filename extension for compression type detection
+
+	local trim=${1%.tar*}
+	local ext=${1##$trim}
+	local cmd
+
+	get_compression_command "$ext" cmd
+}
+
+# Retrieve the compression command for an archive extension, or cat for .tar,
+# and save it to an existing array name. If the extension cannot be found,
+# clear the array and return failure.
+get_compression_command() {
+	# $1: final archive filename extension for compression type detection
+	# $2: array variable to save command
+
+	local c=() ext=$1 outputvar=$2
 
 	case "$ext" in
-		*.tar.gz)  ${COMPRESSGZ[@]:-gzip -c -f -n} ;;
-		*.tar.bz2) ${COMPRESSBZ2[@]:-bzip2 -c -f} ;;
-		*.tar.xz)  ${COMPRESSXZ[@]:-xz -c -z -} ;;
-		*.tar.zst) ${COMPRESSZST[@]:-zstd -c -z -q -} ;;
-		*.tar.lrz) ${COMPRESSLRZ[@]:-lrzip -q} ;;
-		*.tar.lzo) ${COMPRESSLZO[@]:-lzop -q} ;;
-		*.tar.Z)   ${COMPRESSZ[@]:-compress -c -f} ;;
-		*.tar.lz4) ${COMPRESSLZ4[@]:-lz4 -q} ;;
-		*.tar.lz)  ${COMPRESSLZ[@]:-lzip -c -f} ;;
-		*.tar)     cat ;;
-		*) warning "$(gettext "'%s' is not a valid archive extension.")" \
-			"$ext"; cat ;;
+		.tar.gz)  c=("${COMPRESSGZ[@]}");  (( ${#c[@]} )) || c=(-gzip -c -f -n) ;;
+		.tar.bz2) c=("${COMPRESSBZ2[@]}"); (( ${#c[@]} )) || c=(bzip2 -c -f) ;;
+		.tar.xz)  c=("${COMPRESSXZ[@]}");  (( ${#c[@]} )) || c=(xz -c -z -) ;;
+		.tar.zst) c=("${COMPRESSZST[@]}"); (( ${#c[@]} )) || c=(zstd -c -z -q -) ;;
+		.tar.lrz) c=("${COMPRESSLRZ[@]}"); (( ${#c[@]} )) || c=(lrzip -q) ;;
+		.tar.lzo) c=("${COMPRESSLZO[@]}"); (( ${#c[@]} )) || c=(lzop -q) ;;
+		.tar.Z)   c=("${COMPRESSZ[@]}");   (( ${#c[@]} )) || c=(compress -c -f) ;;
+		.tar.lz4) c=("${COMPRESSLZ4[@]}"); (( ${#c[@]} )) || c=(lz4 -q) ;;
+		.tar.lz)  c=("${COMPRESSLZ[@]}");  (( ${#c[@]} )) || c=(lzip -c -f) ;;
+		.tar)     c=(cat) ;;
 	esac
+
+	array_build "$outputvar" c
+	(( ${#c[@]} ))
 }
