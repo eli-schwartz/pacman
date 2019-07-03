@@ -30,6 +30,6 @@ buildenv_functions+=('buildenv_makeflags')
 
 buildenv_makeflags() {
 	if check_option "makeflags" "n"; then
-		unset MAKEFLAGS
+		unset MAKEFLAGS SAMUFLAGS
 	fi
 }

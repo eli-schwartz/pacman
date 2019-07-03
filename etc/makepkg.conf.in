@@ -43,6 +43,7 @@ CHOST="@CHOST@"
 #RUSTFLAGS="-C opt-level=2"
 #-- Make Flags: change this for DistCC/SMP systems
 #MAKEFLAGS="-j2"
+#SAMUFLAGS="-j2"
 #-- Debugging flags
 #DEBUG_CFLAGS="-g"
 #DEBUG_CXXFLAGS="-g"
