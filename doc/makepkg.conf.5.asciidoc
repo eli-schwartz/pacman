@@ -82,8 +82,13 @@ Options
 	available linker flags.
 
 **MAKEFLAGS=**"makeflags"::
-	This is often used to set the number of jobs used; for example, `-j2`.
-	Other flags that make accepts can also be passed.
+	This is often used to set the number of jobs used in a Makefile; for
+	example, `-j2`. Other flags that make accepts can also be passed.
+
+**SAMUFLAGS=**"samuflags"::
+	This is often used to set the number of jobs used for the samurai build
+	tool; for example, `-j2`. Read linkman:samu[1] for more details on what
+	flags can be passed via `SAMUFLAGS`.
 
 **DEBUG_CFLAGS=**"debug_cflags"::
 	Additional compiler flags appended to `CFLAGS` for use in debugging. Usually
