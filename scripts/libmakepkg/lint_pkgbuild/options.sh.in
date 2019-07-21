@@ -31,7 +31,7 @@ lint_pkgbuild_functions+=('lint_options')
 
 
 lint_options() {
-	local ret=0 list name kopt options_list
+	local list name kopt options_list
 
 	options_list=("${options[@]}")
 	for name in "${pkgname[@]}"; do
@@ -49,9 +49,6 @@ lint_options() {
 			fi
 		done
 
-		error "$(gettext "%s array contains unknown option '%s'")" "options" "$i"
-		ret=1
+		warning "$(gettext "%s array contains unknown option '%s'")" "options" "$i"
 	done
-
-	return $ret
 }
