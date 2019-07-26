@@ -402,7 +402,11 @@ run_function() {
 	if (( ! BASH_SUBSHELL )); then
 		msg "$(gettext "Starting %s()...")" "$pkgfunc"
 	fi
-	cd_safe "$srcdir"
+	if (( PICKINSTALL )) && [[ $pkgfunc = package* ]]; then
+		cd_safe "$pkgdirbase/staging"
+	else
+		cd_safe "$srcdir"
+	fi
 
 	if (( LOGGING )); then
 		local fullver=$(get_full_version)
@@ -919,15 +923,42 @@ backup_package_variables() {
 	done
 }
 
+consolidate_pickinstall() { (
+	(( PICKINSTALL )) || return 0
+
+	rm -rf "$pkgdir" && mkdir "$pkgdir"
+	cd "$pkgdirbase/staging"
+	# the challenge will be collecting intermediate directories
+	printf '%s\0' "${pick[@]}" | LANG=C bsdtar -cnf - --null --files-from - |
+		bsdtar -xf - -C "$pkgdir"
+
+	# hmmm
+	shopt -s dotglob
+	cd $pkgdir
+	find * -type d -exec bash -c 'cd '${pkgdirbase@Q}/staging' && getfacl "${@#$prefix}"' _ {} + |
+		setfacl --restore=-
+
+) }
+
 run_single_packaging() {
-	local pkgdir="$pkgdirbase/$pkgname"
+	local pick=() pkgdir="$pkgdirbase/$pkgname"
 	mkdir "$pkgdir"
 	if [[ -n $1 ]] || (( PKGFUNC )); then
 		run_package $1
 	fi
+	consolidate_pickinstall
 	tidy_install
 	lint_package || exit $E_PACKAGE_FAILED
 	create_package
+}
+
+run_pick_packaging() {
+	local pkgdir="$pkgdirbase/staging"
+	if [[ -n $1 ]] || (( PKGFUNC )); then
+		run_package $1
+		cd "$pkgdir"
+		printf '%s\0'
+	fi
 }
 
 run_split_packaging() {
