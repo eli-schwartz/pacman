@@ -82,6 +82,10 @@ strip_file() {
 			fi
 		done < <(find . -type f -perm -u+w -print0 2>/dev/null)
 
+		# Unified debug packages means this is an unreliable order. Some split
+		# packages may have installed different binaries to the same path (see
+		# FS#63356) but we don't treat these files as the master files...
+		# because not all binaries have build-ids.
 		if [[ -n "$bid" ]]; then
 			local target
 			mkdir -p "$dbgdir/.build-id/${bid:0:2}"
