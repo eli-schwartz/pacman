@@ -46,7 +46,13 @@ strip_file() {
 	if check_option "debug" "y"; then
 		local bid=$(build_id "$binary")
 
-		# has this file already been stripped
+		# has this filepath been stripped before under a different Build Id
+		if [[ -f "$dbgdir/$binary.debug" ]]; then
+			if [[ -n $bid && $bid != $(build_id "$dbgdir/$binary.debug") ]]; then
+				warning "Split package with multiple copies of the file '%s' have different Build Ids" "${binary#./}"
+			fi
+		fi
+		# has this file's hardlink already been stripped
 		if [[ -n "$bid" ]]; then
 			if [[ -f "$dbgdir/.build-id/${bid:0:2}/${bid:2}.debug" ]]; then
 				return
