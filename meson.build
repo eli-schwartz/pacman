@@ -414,6 +414,8 @@ TEST_ENV.set('PMTEST_LIBMAKEPKG_DIR', join_paths(meson.build_root(), 'scripts/li
 TEST_ENV.set('PMTEST_UTIL_DIR', meson.build_root() + '/')
 TEST_ENV.set('PMTEST_SCRIPT_DIR', join_paths(meson.build_root(), 'scripts/'))
 
+meson.add_dist_script('./autogen.sh')
+
 subdir('test/pacman')
 subdir('test/scripts')
 subdir('test/util')
