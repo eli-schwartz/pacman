@@ -68,11 +68,12 @@ VERSION         DESCRIPTION
                 - be compatible with file 5.37's application/gzip MIME type
                 - forbid non-ASCII pkgname and pkgver (FS#49342)
                 - fix exiting on failure without ensuring dependencies are
-                  prompted for removal
+                  prompted for removal (FS#63000)
                 - quiet superfluous warnings for missing debug source files for
                   artificial symbols
               - pacman-key:
                 - just accept one file to verify, and enforce detached sigs
+                  (FS#52022)
               - repo-add:
                 - add support for zst compressed databases
                 - print the name of the database when extracting
