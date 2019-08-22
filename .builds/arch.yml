@@ -1,0 +1,16 @@
+image: archlinux
+packages:
+- meson
+- fakechroot
+sources:
+- https://github.com/eli-schwartz/pacman
+tasks:
+- configure: |
+    cd pacman
+    meson builddir
+- build: |
+    cd pacman/builddir
+    ninja
+- test: |
+    cd pacman/builddir
+    ninja test
