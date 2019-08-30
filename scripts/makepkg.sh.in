@@ -272,7 +272,7 @@ handle_deps() {
 		# install missing deps from binary packages (using pacman -S)
 		msg "$(gettext "Installing missing dependencies...")"
 
-		if ! run_pacman -S --asdeps "${deplist[@]}"; then
+		if ! printf '%s\n' "${deplist[@]}" | run_pacman -S --asdeps -; then
 			error "$(gettext "'%s' failed to install missing dependencies.")" "$PACMAN"
 			return $R_DEPS_MISSING
 		fi
@@ -337,7 +337,7 @@ remove_deps() {
 
 	msg "Removing installed dependencies..."
 	# exit cleanly on failure to remove deps as package has been built successfully
-	if ! run_pacman -Rnu ${deplist[@]}; then
+	if ! printf '%s\n' "${deplist[@]}" | run_pacman -Rnu -; then
 		warning "$(gettext "Failed to remove installed dependencies.")"
 		return $E_REMOVE_DEPS_FAILED
 	fi
