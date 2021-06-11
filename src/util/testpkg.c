@@ -22,6 +22,7 @@
 #include <stdarg.h> /* va_list */
 
 #include <alpm.h>
+#include <alpm_version.h>
 #include "util.h" /* For Localization */
 
 __attribute__((format(printf, 3, 0)))
@@ -52,7 +53,7 @@ int main(int argc, char *argv[])
 #endif
 
 	if(argc != 2) {
-		fprintf(stderr, "testpkg (pacman) v" PACKAGE_VERSION "\n\n");
+		fprintf(stderr, "testpkg (pacman) v" PACMAN_VERSION_STRING "\n\n");
 		fprintf(stderr,	_("Test a pacman package for validity.\n\n"));
 		fprintf(stderr,	_("Usage: testpkg <package file>\n"));
 		return 1;

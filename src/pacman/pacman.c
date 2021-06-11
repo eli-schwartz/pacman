@@ -39,6 +39,7 @@
 /* alpm */
 #include <alpm.h>
 #include <alpm_list.h>
+#include <alpm_version.h>
 
 /* pacman */
 #include "pacman.h"
@@ -240,7 +241,7 @@ static void usage(int op, const char * const myname)
 static void version(void)
 {
 	printf("\n");
-	printf(" .--.                  Pacman v%s - libalpm v%s\n", PACKAGE_VERSION, alpm_version());
+	printf(" .--.                  Pacman v%s - libalpm v%s\n", PACMAN_VERSION_STRING, alpm_version());
 	printf("/ _.-' .-.  .-.  .-.   Copyright (C) 2006-2021 Pacman Development Team\n");
 	printf("\\  '-. '-'  '-'  '-'   Copyright (C) 2002-2006 Judd Vinet\n");
 	printf(" '--'\n");

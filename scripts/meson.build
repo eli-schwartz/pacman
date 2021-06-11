@@ -16,12 +16,22 @@ foreach script, wrapped : scripts
   script_shortname = script.split('.')[0]
 
   internal_script = custom_target(
-    script_shortname,
+    use_git_version ? script : script_shortname,
     input : script,
     command : [ SCRIPT_EDITOR, '@INPUT@', '@OUTPUT@', '0755'],
-    output : script_shortname,
-    install : true,
+    output : use_git_version ? script : script_shortname,
+    install : not use_git_version,
     install_dir : BINDIR)
+
+  if use_git_version
+    internal_script = custom_target(
+      script_shortname,
+      input: internal_script,
+      output: script_shortname,
+      command: [version_stamper, version_txt, '@INPUT@', '@OUTPUT@'],
+      install: true,
+      install_dir: BINDIR)
+  endif
 
   if wrapped
     script_wrappers += [[ script_shortname, internal_script, meson.current_build_dir() ]]

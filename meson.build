@@ -278,7 +278,11 @@ substs.set('localstatedir', LOCALSTATEDIR)
 substs.set('PKGDATADIR', PKGDATADIR)
 substs.set('PREFIX', PREFIX)
 substs.set('BASH', BASH.path())
-substs.set('PACKAGE_VERSION', PACKAGE_VERSION)
+if get_option('use-git-version')
+  substs.set('PACKAGE_VERSION', '@PACKAGE_VERSION@')
+else
+  substs.set('PACKAGE_VERSION', PACKAGE_VERSION)
+endif
 substs.set('PACKAGE_NAME', meson.project_name())
 substs.set('BUILDSCRIPT', BUILDSCRIPT)
 substs.set('TEMPLATE_DIR', get_option('makepkg-template-dir'))
@@ -313,6 +317,15 @@ if build_doc
 endif
 
 includes = include_directories('src/common', 'lib/libalpm')
+
+custom_target(
+  'alpm_version.h',
+  command: [version_stamper, version_txt, '@INPUT@', '@OUTPUT@'],
+  input: alpm_version_h_in,
+  output: 'alpm_version.h',
+  install: true,
+  install_dir: get_option('includedir'))
+
 
 libcommon = static_library(
   'common',

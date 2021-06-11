@@ -23,13 +23,15 @@
 #include <stdio.h> /* printf */
 #include <string.h>
 
+#include <alpm_version.h>
+
 /* forward declaration, comes from version.o in libalpm source that is linked
  * in directly so we don't have any library deps */
 int alpm_pkg_vercmp(const char *a, const char *b);
 
 static void usage(void)
 {
-	fprintf(stderr, "vercmp (pacman) v" PACKAGE_VERSION "\n\n"
+	fprintf(stderr, "vercmp (pacman) v" PACMAN_VERSION_STRING "\n\n"
 		"Compare package version numbers using pacman's version comparison logic.\n\n"
 		"Usage: vercmp <ver1> <ver2>\n\n"
 		"Output values:\n"

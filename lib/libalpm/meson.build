@@ -30,3 +30,5 @@ libalpm_sources = files('''
   util.h util.c
   version.c
 '''.split())
+
+alpm_version_h_in = files('alpm_version.h.in')
