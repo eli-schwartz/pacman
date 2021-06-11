@@ -49,11 +49,14 @@ else
 endif
 
 if get_option('use-git-version')
-  PACKAGE_VERSION = run_command(
-      find_program('git'),
-      'describe',
-      '--abbrev=4',
-      '--dirty').stdout().strip().strip('v')
+  find_program('git')
+  git_version_gen = find_program('build-aux/git-version-gen.sh')
+  out = run_command(git_version_gen, meson.current_source_dir(), '-')
+  if out.returncode() == 0
+    PACKAGE_VERSION = out.stdout().strip().strip('v')
+  else
+    error(out.stderr())
+  endif
 else
   PACKAGE_VERSION = meson.project_version()
 endif
