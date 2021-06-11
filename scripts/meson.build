@@ -1,33 +1,18 @@
-wrapped_scripts = [
-  'makepkg.sh.in',
-  'pacman-db-upgrade.sh.in',
-  'pacman-key.sh.in',
-  'repo-add.sh.in'
-]
-
-scripts = [
-  'makepkg-template.pl.in',
-]
+scripts = {
+  'makepkg-template.pl.in': false,
+  'makepkg.sh.in': true,
+  'pacman-db-upgrade.sh.in': true,
+  'pacman-key.sh.in': true,
+  'repo-add.sh.in': true,
+}
 
 SCRIPT_EDITOR = find_program(configure_file(
   input : join_paths(meson.source_root(), 'build-aux/edit-script.sh.in'),
   output : 'edit-script.sh',
   configuration : substs))
 
-foreach script : scripts
-  script_shortname = script.split('.')[0]
-
-  custom_target(
-    script,
-    input : script,
-    command : [ SCRIPT_EDITOR, '@INPUT@', '@OUTPUT@', '0755'],
-    output : script_shortname,
-    install : true,
-    install_dir : get_option('bindir'))
-endforeach
-
 script_wrappers = []
-foreach script : wrapped_scripts
+foreach script, wrapped : scripts
   script_shortname = script.split('.')[0]
 
   internal_script = custom_target(
@@ -38,10 +23,12 @@ foreach script : wrapped_scripts
     install : true,
     install_dir : BINDIR)
 
-  script_wrappers += [[ script_shortname, internal_script, meson.current_build_dir() ]]
+  if wrapped
+    script_wrappers += [[ script_shortname, internal_script, meson.current_build_dir() ]]
 
-  if script_shortname == 'repo-add'
-    repo_add = internal_script
+    if script_shortname == 'repo-add'
+      repo_add = internal_script
+    endif
   endif
 endforeach
 
