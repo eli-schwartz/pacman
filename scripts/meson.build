@@ -16,7 +16,7 @@ foreach script, wrapped : scripts
   script_shortname = script.split('.')[0]
 
   internal_script = custom_target(
-    script,
+    script_shortname,
     input : script,
     command : [ SCRIPT_EDITOR, '@INPUT@', '@OUTPUT@', '0755'],
     output : script_shortname,
