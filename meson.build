@@ -48,9 +48,18 @@ else
   BASHCOMPDIR = join_paths(DATAROOTDIR, 'bash-completion/completions')
 endif
 
-if get_option('use-git-version')
+use_git_version = get_option('use-git-version')
+version_stamper = find_program('build-aux/version_stamp.sh')
+if use_git_version
   find_program('git')
   git_version_gen = find_program('build-aux/git-version-gen.sh')
+  version_txt = custom_target(
+    'git version stamp',
+    command: [git_version_gen, meson.current_source_dir(), '@OUTPUT@'],
+    output: '.version.txt',
+    build_by_default: true,
+    build_always_stale: true,
+  )
   out = run_command(git_version_gen, meson.current_source_dir(), '-')
   if out.returncode() == 0
     PACKAGE_VERSION = out.stdout().strip().strip('v')
@@ -59,6 +68,10 @@ if get_option('use-git-version')
   endif
 else
   PACKAGE_VERSION = meson.project_version()
+  version_txt = configure_file(
+    output: '.version.txt',
+    command: ['echo', meson.project_version()],
+    capture: true)
 endif
 
 conf = configuration_data()
